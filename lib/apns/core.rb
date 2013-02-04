@@ -217,7 +217,6 @@ module APNS
   end
 
   def self.with_connection(host, port, &block)
-    retries = 0
     begin
       ssl, sock = self.get_connection(host, port)
       yield ssl if block_given?
@@ -227,13 +226,7 @@ module APNS
         sock.close
       end
     rescue Errno::ECONNABORTED, Errno::EPIPE, Errno::ECONNRESET
-      if (retries += 1) < 5
-        self.remove_connection(host, port)
-        retry
-      else
-        # too-many retries, re-raise
-        raise
-      end
+      raise
     end
   end
 end
